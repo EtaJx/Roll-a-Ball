@@ -1,0 +1,13 @@
+### Unity3D函数执行顺序
+
+1. Awake：在函数开始之前初始化变量或游戏状态。在脚本整个生命周期内它仅被调用一次。Awake在所有对象呗初始化之后调用，所以可以安全的与其他对象对话或者诸如GameObject.FindWithTag()这样的函数搜索它们。每个游戏物体上的Awake以随机的顺序被调用。因此，应该用Awake来设置脚本间的引用，并用Start来传递信息Awake总是在Start之前被调用。它不能用来执行协同程序。
+2. Start：仅在Update函数第一次被调用前被调用。Start在behaviour的生命周期中制备调用一次。它和Awake的不用是在Start只在脚本实例被启动时被调用。这样可以按需调整延迟初始化代码。Awake总是在Start之前执行。这允许协调初始化顺寻。在所有脚本实例中，Start函数总是在Awake函数之后调用。
+3. FixedUpdate：固定帧更新，更新频率默认为0.02s
+4. Update：正常帧更新，用于更新逻辑。每一帧都执行。处理Rigidbody时，需要用FixedUpdate代替Update。例如:给刚体加一个作用力时，你必须应用作用力在FixedUpdate里的固定帧，而不是Update中的帧。(两者帧长不同)FixedUpdate，每固定帧绘制时执行一次，和update不同的是FixedUpdate是渲染帧执行，如果你的渲染效率低下的时候FixedUpdate调用次数就会跟着下降。FixedUpdate比较适用于物理引擎的计算，因为是跟每帧渲染有关。Update就比较适合做控制。
+- **Update()与FixedUpdate()的区别：** 从字面上理解，它们都是在更新时会被调用，并且会循环的调用。但是Update会在每次渲染新的一帧时，被调用。而FixedUpdate会在每个固定的时间间隔被调用，那么要是Update 和FixedUpdate的时间间隔一样，是不是就一样呢？答案是不一定，因为Update受当前渲染的物体，更确切的说是三角形的数量影响，有时快有时慢，帧率会变化，update被调用的时间间隔就发生变化。但是FixedUpdate则不受帧率的变化，它是以固定的时间间隔来被调用。
+5. LateUpdate：在所有Update函数调用后被调用，和fixedupdate一样都是每一帧都被调用执行，这可用于调整脚本执行顺序。例如:当物体在Update里移动时，跟随物体的相机可以在LateUpdate里实现。LateUpdate,在每帧Update执行完毕调用，他是在所有update结束后才调用，比较适合用于命令脚本的执行。官网上例子是摄像机的跟随，都是在所有update操作完才跟进摄像机，不然就有可能出现摄像机已经推进了，但是视角里还未有角色的空帧出现。
+- **Update和LateUpdate的区别：** 在圣典里LateUpdate被解释成一句话,LateUpdate是在所有Update函数调用后被调用。这可用于调整脚本执行顺序。例如:当物体在Update里移动时，跟随物体的相机可以在LateUpdate里实现。LateUpdate是晚于所有Update执行的。例如：游戏中有2个脚本，脚本1含有Update和LateUpdate，脚本2含有Update，那么当游戏执行时，每一帧都是把2个脚本中的Update执行完后才执行LateUpdate 。虽然是在同一帧中执行的，但是Update会先执行，LateUpdate会晚执行。现在假设有2个不同的脚本同时在Update中控制一个物体，那么当其中一个脚本改变物体方位、旋转或者其他参数时，另一个脚步也在改变这些东西，那么这个物体的方位、旋转就会出现一定的反复。如果还有个物体在Update中跟随这个物体移动、旋转的话，那跟随的物体就会出现抖动。 如果是在LateUpdate中跟随的话就会只跟随所有Update执行完后的最后位置、旋转，这样就防止了抖动。
+6. OnGUI：在渲染和处理GUI事件时调用。比如：你画一个button或label时常常用到它。这意味着OnGUI也是每帧执行一次。
+7. Reset：在用户点击检视面板的Reset按钮或者首次添加该组件时被调用。此函数只在编辑模式下被调用。Reset最常用于在检视面板中给定一个默认值。
+8. OnDisable：当物体被销毁时 OnDisable将被调用，并且可用于任意清理代码。脚本被卸载时，OnDisable将被调用，OnEnable在脚本被载入后调用。注意： OnDisable不能用于协同程序。
+9. OnDestroy：当MonoBehaviour将被销毁时，这个函数被调用。OnDestroy只会在预先已经被激活的游戏物体上被调用。注意：OnDestroy也不能用于协同程序。
